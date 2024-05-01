@@ -9,16 +9,61 @@ namespace UPB.BusinessLogic.Managers
 {
     public class PatientManager
     {
-        public PatientManager() { }
+        private List<Patient> _patients;
+        public PatientManager() 
+        {
+            _patients = new List<Patient>();
+
+            readPatientsToList();
+        }
 
         public Patient CreatePatient(string name,string lastName,int ci)
         {
-            Patient patient;
-            patient = new Patient(name, lastName,ci,randomBloodType());
-
-            return patient;
+            Patient createdPatient;
+            createdPatient = new Patient(name, lastName,ci,randomBloodType());
+            _patients.Add(createdPatient);
+            return createdPatient;
 
         }
+
+        public Patient UpdatePatient(int ci, Patient updatedPatient) 
+        {
+            Patient patientToUpdate = _patients.Find(x => x.CI == ci);
+
+            if (patientToUpdate == null) 
+            {
+                throw new NotImplementedException();
+            }
+
+            return patientToUpdate;
+        }
+
+        public List<Patient> GetPatients() 
+        {
+            return _patients;
+        }
+        public Patient GetPatientByCI(int ci) 
+        {
+            Patient patientToFind = _patients.Find(x =>x.CI == ci);
+            if (patientToFind == null) 
+            {
+                throw new NotImplementedException();
+            }
+            return patientToFind;
+
+        }
+
+        public List<Patient> Delete(int ci) 
+        {
+            Patient patientToRemove = _patients.Find(x => x.CI == ci);
+            if (patientToRemove == null)
+            {
+                throw new NotImplementedException();
+            }
+            _patients.Remove(patientToRemove);
+            return _patients;
+        }
+
 
         private string randomBloodType() 
         {
@@ -58,5 +103,42 @@ namespace UPB.BusinessLogic.Managers
             }
             return bloodType;
         }
+
+        private void readPatientsToList() 
+        {
+            StreamReader reader = new StreamReader("C:\\Users\\andre\\practica2Certi1\\practica2Certi1\\Patients.txt");
+
+            _patients.Clear();
+
+            while (!reader.EndOfStream)
+            {
+                string line = reader.ReadLine();
+                string[] patientInfo = line.Split(",");
+                Patient newPatient = new Patient()
+                {
+                    Name = patientInfo[0],
+                    LastName = patientInfo[1],
+                    CI = int.Parse(patientInfo[2]),
+                    BloodType = patientInfo[3]
+                };
+                _patients.Add(newPatient);
+
+            }
+            reader.Close();
+        }
+
+        private void writeListToFile() 
+        {
+            StreamWriter writer = new StreamWriter("C:\\Users\\andre\\practica2Certi1\\practica2Certi1\\Patients.txt");
+
+            foreach(var patient in _patients) 
+            {
+                string[] patientInfo = new string[] { patient.Name,patient.LastName,$"patient.CI",patient.BloodType};
+                writer.WriteLine(string.Join(",",patientInfo));
+            }
+
+            writer.Close();
+        }
+
     }
 }
