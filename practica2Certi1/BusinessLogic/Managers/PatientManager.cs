@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,9 +11,11 @@ namespace UPB.BusinessLogic.Managers
     public class PatientManager
     {
         private List<Patient> _patients;
-        public PatientManager() 
+        private IConfiguration _configuration;
+        public PatientManager(IConfiguration configuration) 
         {
             _patients = new List<Patient>();
+            _configuration = configuration;
 
             readPatientsToList();
         }
@@ -111,7 +114,8 @@ namespace UPB.BusinessLogic.Managers
 
         private void readPatientsToList() 
         {
-            StreamReader reader = new StreamReader("C:\\Users\\andre\\practica2Certi1\\practica2Certi1\\Patients.txt");
+            string? patientsFile = _configuration.GetSection("FilePaths").GetSection("PatientsFile").Value;
+            StreamReader reader = new StreamReader(patientsFile);
 
             _patients.Clear();
 
@@ -134,7 +138,11 @@ namespace UPB.BusinessLogic.Managers
 
         private void writeListToFile() 
         {
-            StreamWriter writer = new StreamWriter("C:\\Users\\andre\\practica2Certi1\\practica2Certi1\\Patients.txt");
+            string? patientsFile = _configuration.GetSection("FilePaths").GetSection("PatientsFile").Value;
+            StreamWriter writer = new StreamWriter(patientsFile);
+                                                               
+                                                                                                                     
+
 
             foreach(var patient in _patients) 
             {

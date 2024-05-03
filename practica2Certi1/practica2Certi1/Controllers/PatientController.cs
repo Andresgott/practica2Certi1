@@ -11,9 +11,9 @@ namespace UPB.practica2Certi1.Controllers
     {
         public readonly PatientManager _patientManager;
 
-        public PatientController()
+        public PatientController(PatientManager patientManager)
         {
-            _patientManager = new PatientManager();
+            _patientManager = patientManager;
         }
 
         [HttpGet]
