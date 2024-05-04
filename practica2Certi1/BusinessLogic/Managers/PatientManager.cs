@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UPB.BusinessLogic.Models;
+using UPB.BusinessLogic.Managers.Exceptions;
 
 namespace UPB.BusinessLogic.Managers
 {
@@ -36,7 +37,7 @@ namespace UPB.BusinessLogic.Managers
 
             if (patientToUpdate == null) 
             {
-                throw new NotImplementedException();
+                throw new PatientNotFoundException();
             }
             patientToUpdate.Name = updatedPatient.Name;
             patientToUpdate.LastName = updatedPatient.LastName;
@@ -54,7 +55,7 @@ namespace UPB.BusinessLogic.Managers
             Patient patientToFind = _patients.Find(x =>x.CI == ci);
             if (patientToFind == null) 
             {
-                throw new NotImplementedException();
+                throw new PatientNotFoundException();
             }
             return patientToFind;
 
@@ -65,7 +66,7 @@ namespace UPB.BusinessLogic.Managers
             Patient patientToRemove = _patients.Find(x => x.CI == ci);
             if (patientToRemove == null)
             {
-                throw new NotImplementedException();
+                throw new PatientNotFoundException();
             }
             _patients.Remove(patientToRemove);
             writeListToFile();
@@ -115,6 +116,10 @@ namespace UPB.BusinessLogic.Managers
         private void readPatientsToList() 
         {
             string? patientsFile = _configuration.GetSection("FilePaths").GetSection("PatientsFile").Value;
+            if(patientsFile == null) 
+            {
+                throw new JSONSectionException();
+            }
             StreamReader reader = new StreamReader(patientsFile);
 
             _patients.Clear();
@@ -139,6 +144,10 @@ namespace UPB.BusinessLogic.Managers
         private void writeListToFile() 
         {
             string? patientsFile = _configuration.GetSection("FilePaths").GetSection("PatientsFile").Value;
+            if (patientsFile == null)
+            {
+                throw new JSONSectionException();
+            }
             StreamWriter writer = new StreamWriter(patientsFile);
                                                                
                                                                                                                      

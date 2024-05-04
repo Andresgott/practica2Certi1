@@ -1,7 +1,24 @@
 using Microsoft.OpenApi.Models;
 using UPB.BusinessLogic.Managers;
+using UPB.BusinessLogic.Managers.Exceptions;
+using Serilog;
+using UPB.practica2Certi1.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+
+string? logFile = builder.Configuration.GetSection("FilePaths").GetSection("Log").Value;
+if (logFile == null) 
+{
+    throw new JSONSectionException();
+}
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File(logFile)
+    .CreateLogger();
+
+
+
 
 builder.Configuration
     .AddJsonFile("appsettings.json")
@@ -26,6 +43,7 @@ builder.Services.AddSwaggerGen(options=>
 });
 
 var app = builder.Build();
+app.UseExceptionHandlerMiddleware();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -34,6 +52,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.DocumentTitle = builder.Configuration.GetSection("BrowseTabTitle").Value;
+
     });
 }
 
