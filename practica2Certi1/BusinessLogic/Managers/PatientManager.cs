@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using UPB.BusinessLogic.Models;
 using UPB.BusinessLogic.Managers.Exceptions;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Net.Http.Json;
 
 namespace UPB.BusinessLogic.Managers
 {
@@ -13,18 +17,28 @@ namespace UPB.BusinessLogic.Managers
     {
         private List<Patient> _patients;
         private IConfiguration _configuration;
+        private HttpClient _httpClient;
         public PatientManager(IConfiguration configuration) 
         {
             _patients = new List<Patient>();
             _configuration = configuration;
+            _httpClient = new HttpClient();
 
             readPatientsToList();
         }
 
         public Patient CreatePatient(Patient patient)
         {
-            Patient createdPatient;
-            createdPatient = new Patient(patient.Name, patient.LastName,patient.CI,randomBloodType());
+            Task<string> result = GetPatientCode(patient);
+
+            Patient createdPatient = new Patient()
+            {
+                Name = patient.Name,
+                LastName = patient.LastName,
+                CI = patient.CI,
+                BloodType = randomBloodType(),
+                Codigo = result.Result
+            };
             _patients.Add(createdPatient);
             writeListToFile();
             return createdPatient;
@@ -133,7 +147,8 @@ namespace UPB.BusinessLogic.Managers
                     Name = patientInfo[0],
                     LastName = patientInfo[1],
                     CI = int.Parse(patientInfo[2]),
-                    BloodType = patientInfo[3]
+                    BloodType = patientInfo[3],
+                    Codigo = patientInfo[4]
                 };
                 _patients.Add(newPatient);
 
@@ -155,12 +170,25 @@ namespace UPB.BusinessLogic.Managers
 
             foreach(var patient in _patients) 
             {
-                string[] patientInfo = new string[] { patient.Name,patient.LastName,$"{patient.CI}",patient.BloodType};
+                string[] patientInfo = new string[] { patient.Name,patient.LastName,$"{patient.CI}",patient.BloodType,patient.Codigo};
                 writer.WriteLine(string.Join(",",patientInfo));
             }
 
             writer.Close();
         }
+        private async Task<string> GetPatientCode(Patient patient)
+        {
+            var patientInfo = new
+            {
+                Name = patient.Name,
+                LastName = patient.LastName,
+                CI = patient.CI,
+                Code = patient.Codigo
+            };
 
+            var postResult = await _httpClient.PostAsJsonAsync("http://localhost:5217/api/PatientCode", patientInfo);
+            return await postResult.Content.ReadAsStringAsync();
+
+        }
     }
 }
